@@ -54,3 +54,31 @@ export const PATCH = async (request:Request) => {
     }
 
 }
+
+export const DELETE = async (request: Request) => {
+    try {
+        const body = await request.json();
+        const { userId } = body;
+
+        await connect();
+
+        if (!userId) {
+            return new NextResponse("User ID is required", { status: 400 });
+        }
+
+        if (!Types.ObjectId.isValid(userId)) {
+            return new NextResponse("Invalid User ID", { status: 400 });
+        }
+
+        const deletedUser = await User.findByIdAndDelete(userId);
+
+        if (!deletedUser) {
+            return new NextResponse(JSON.stringify({ message: "User not found" }), { status: 404 });
+        }
+
+        return new NextResponse(JSON.stringify({ message: "User deleted successfully", user: deletedUser }), { status: 200 });
+
+    } catch (error) {
+        return new NextResponse("Error deleting user", { status: 500 });
+    }
+}
